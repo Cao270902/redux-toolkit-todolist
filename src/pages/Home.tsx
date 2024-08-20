@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 
@@ -10,14 +10,28 @@ import {
   updateTask,
 } from "../store/slides/tasks";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { fetchTasks } from "../store/thunks/task.thunk";
 
 const Home: React.FC = () => {
   const [task, setTask] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [editingTask, setEditingTask] = useState<number | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
-  const tasks = useAppSelector((state: RootState) => state.tasks.tasks);
+  const tasks = useAppSelector((state: RootState) => state.tasks.data);
+  const status = useAppSelector((state: RootState) => state.tasks.status);
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    dispatch(fetchTasks());
+  }, []);
+
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+
+  if (status === "failed") {
+    return <div>Failed to load tasks</div>;
+  }
 
   const handleAddTask = () => {
     if (task) {

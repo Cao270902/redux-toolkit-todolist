@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { fetchTasks } from "../../thunks/task.thunk";
 
 type Task = {
   id: number;
@@ -7,11 +8,15 @@ type Task = {
 };
 
 type TasksState = {
-  tasks: Task[];
+  data: Task[];
+  status: "idle" | "loading" | "succeeded" | "failed";
+  error: string | null;
 };
 
 const initialState: TasksState = {
-  tasks: [],
+  data: [],
+  status: "idle",
+  error: null,
 };
 
 const slice = createSlice({
@@ -26,24 +31,38 @@ const slice = createSlice({
         title: action.payload,
         completed: false,
       };
-      state.tasks.push(newTask);
+      state.data.push(newTask);
     },
     toggleTask: (state, action) => {
       // console.log(action);
-      const task = state.tasks.find((task) => task.id === action.payload);
+      const task = state.data.find((task) => task.id === action.payload);
       if (task) {
         task.completed = !task.completed;
       }
     },
     removeTask: (state, action) => {
-      state.tasks = state.tasks.filter((task) => task.id !== action.payload);
+      state.data = state.data.filter((task) => task.id !== action.payload);
     },
     updateTask: (state, action) => {
-      const task = state.tasks.find((task) => task.id === action.payload.id);
+      const task = state.data.find((task) => task.id === action.payload.id);
       if (task) {
         task.title = action.payload.title;
       }
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchTasks.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchTasks.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.data = action.payload;
+      })
+      .addCase(fetchTasks.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message || "Failed to fetch tasks";
+      });
   },
 });
 
