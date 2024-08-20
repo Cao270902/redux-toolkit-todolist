@@ -25,7 +25,6 @@ const Home: React.FC = () => {
       setTask("");
     }
   };
-
   const handleUpdateTask = (id: number) => {
     if (editingTitle) {
       dispatch(updateTask({ id, title: editingTitle }));
